@@ -1,0 +1,13 @@
+\chapter{CNN}
+\cite{fully convolutional networs for semantic seg}
+Neural networks operate at pixel level by sumultanesously learning which features to extract and how to classify them.
+those designed for semantic segmentation consist of hierarchical layers that encode both local and global information in a non-linear manner. these layers of neurons compute convolutions on the previous layer outputs. The layers are stacked and combined with max-pooling and elementwise non-linear transfer functions to extract higher order features from input. The output is a probability vector on which as softmax is applied to predict the output label.
+Skip architecture takes advantage of this structure
+CNNS rely on textural information: analyze texture patterns at different spatial scales through convolution layers. Theye learn to stract features such as edges,corners, gradients that are characteristics of different objects/classes. 
+
+
+Typical recognition networks like AlexNet,Lennet take fixed sized inputs and produce non-spatial outputs
+
+Fully convolutional netwoks combines alyers of the feature hierachy and refine the spatial precision of the output.
+Fine tuned fully convolutionalized layers classifiers produce coarse output hence skips tp combine final prediction with lower layers with finer strides.
+Skip connections accelerate training

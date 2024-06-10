@@ -1,0 +1,122 @@
+\chapter{Data and Methods}
+
+\section{Data}
+\subsection{Potsdam Dataset}
+The Potsdam dataset from the International Society for Remote Sensing and Photogrammetry (ISPRS)\footnote{ \href{https://www.isprs.org/education/benchmarks/UrbanSemLab/2d-sem-label-potsdam.aspx}ISPRS} consists of a mosaic of 38 very high-resolution orthophotos, each with dimensions of 6000 by 6000 pixels at a 5cm resolution, covering an urban area in Potsdam, Germany. The dataset includes four multispectral bands: Red, Green, Blue, and Near Infrared.
+
+In addition to these images, there are associated labels for each image, categorizing regions into impervious surfaces, buildings, low vegetation, trees, cars, and clutter (everything else). The labels are based on specific color combinations in the Red, Green, and Blue bands, where (0, 0, 255), (0, 255, 0), (0, 255, 255), (255, 0, 0), (255, 255, 0), and (255, 255, 255) represent the classes respectively. This is illustrated in the following sample image and its corresponding label.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{sample_image.png}
+     \caption{Example from the Potsdam dataset showing the RGB and Near Infrared (RGB-NIR) bands at a resolution of 5cm per pixel.}
+
+    \label{fig:sample_label}
+\end{figure}
+
+The dataset is already split into training and testing sets. For this study, we maintained this split and selected two images from the training set for validation. The testing images are identified as 2\_13, 2\_14, 3\_13, 3\_14, 4\_13, 4\_14, 4\_15, 5\_13, 5\_14, 5\_15, 6\_13, 6\_14, 6\_15, and 7\_13. The training images are uniquely identified as  2\_10, 2\_11, 3\_10, 3\_11, 4\_10, 4\_11, 4\_12, 5\_10, 5\_11, 5\_12, 6\_7,6\_8, 6\_9, 6\_10, 6\_11, 6\_12, 7\_8, 7\_9, 7\_10,7\_11, and 7\_12.
+
+It was noted that two images, 6\_7 and 4\_12, had annotation errors where, instead of only having pixel values of 0 or 255, they contained values ranging from 2 to 42 in the lower spectrum and from 214 to 254 in the higher spectrum. By applying thresholding techniques, we corrected these errors by converting the lower spectrum to 0 and the higher spectrum to 255.
+
+\section{Method overview}
+As initially mentioned, this study has two main objectives. The first objective is to compare existing traditional and deep learning methods of feature extraction for semantic segmentation as a downstream task, specifically highlighting their performance in an Object-Based Image Analysis (OBIA) context. The second objective is to overcome the limitations of existing methods by proposing a new approach that incorporates not only textural and spatial features but also geometric features in feature extraction, given the arbitrarily shaped inputs, in an end-to-end manner. Figure illustrates the general workflow pipeline.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{sample_image2.png}
+     \caption{Experimental Framework.}
+
+    \label{fig:sample_label}
+\end{figure}
+
+
+
+\section{Image segmentation}
+To generate regions or superpixels, the deterministic SLIC algorithm was selected due to its advantages over other deterministic methods. It has been shown to be simple, faster, memory efficient, and capable of generating superpixels that adhere to ground feature boundaries, thereby improving semantic segmentation performance \cite{achanta_slic_2012}. It is important that while testing the performance of various feature extraction techniques on semantic segmentation, our starting baseline and input perform relatively well. Furthermore, the SLIC algorithm provides the flexibility to alter the number and compactness of segments by varying the parameter values.
+%
+
+By visually inspecting a sample image, as shown in the following figures, we determined the appropriate parameters for generating segments to be: \texttt{n\_segments} = 900, \texttt{compactness} = 0.1, \texttt{max\_num\_iter} = 10, while retaining the remaining parameters as defaults. However, optimally selecting parameters that accurately match geographic objects remains a challenge \cite{hossain_segmentation_2019}.
+
+%
+
+% Include figures here
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45\textwidth]{sample_image.png}
+    \caption{Sample image used for parameter determination.}
+    \label{fig:sample_image}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.45\textwidth]{segmented_image.png}
+    \caption{Segmented image with parameters: \texttt{n\_segments} = 900, \texttt{compactness} = 0.1, \texttt{max\_num\_iter} = 10.}
+    \label{fig:segmented_image}
+\end{figure}
+
+\section{Traditional handcrafted feature extraction}
+There are various types of features we can use to describe an object combined to form a feature vector. With this feature vector, we can apply traditional machine learning classification techniques such as Random Forest and Support Vector Machine, among others, to identify and classify the objects. The selection and combination of features that will be discriminative enough, depending on the number of classes in an image, require expert knowledge.
+
+In line with our objective of developing a method that incorporates textural, spectral, and geometric features, we explored the manual computation of these features. The tool of choice for this purpose was RegionProps from Scikit-Image\footnote{\href{https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.regionprops}{Scikit-Image RegionProps}}. This tool provides the capability to compute predefined region properties and allows for the computation of additional properties as well\cite{skimageregion}.
+
+\subsection{Spectral feature extraction}
+Color is the primary feature we use to distinguish objects; for example, we associate green with vegetation and blue with water. Therefore, we exploited color descriptors such as color moments, including first-order (mean) and second-order (variance) moments of spectral intensity. However, it is important to note that the significance of color is domain-dependent, as color can represent different things in different fields and domains.
+
+In addition, we computed spectral band ratios such as the Normalized Difference Vegetation Index (NDVI) and Brightness Index (BI). These ratios utilize the spectral characteristics of an image and are useful in distinguishing features such as vegetation. The generated feature vector took the form:
+\[
+\textit{Spectral Feature Vector} = (\textit{Mean1}, \textit{Mean2}, \textit{Mean3}, \textit{Mean4}, \textit{Std1}, \textit{Std2}, \textit{Std3}, \textit{Std4},\textit{Max1}, \textit{Max2}, \textit{Max3}, \textit{Max4},\textit{Min1}, \textit{Min2}, \textit{Min3}, \textit{Min4}, \textit{NDVI}, \textit{BI})
+\]
+where Mean represents the mean spectral intensity, Std is the standard deviation, Max is the maximum intensity and Min is the minimum intensity in each of the four bands for each region.
+
+\subsection{Textural feature extraction}
+Like colour, texture also plays a key role in distinguishing objects. How rough, smooth, bumpy etc an object is an essential discriminative descriptor. In images, these are measured as function of the spatial variation of pixel intensities across a region\cite{lagrange_benchmarking_2015}. The feature vector generated contained a combination of Haralick Features extracted from co-occurrence matrices\cite{porebski_haralick_2008}. These features include contrast, dissimilarity,homogeneity, ASM, energy and correlation. Scikit image provides a tool, Graycomatrix to compute these features with a normalized matrix hence taking care of the sensitivity of the matrices to differences in spatial resolution and image size.
+
+\[
+\textit{Textural Feature Vector} = (\textit{Contrast}, \textit{Dissimilarity}, \textit{Homogeneity}, \textit{ASM}, \textit{Energy}, \textit{Correlation})
+\]
+
+\subsection{Geometric feature extraction}
+When selecting the geometric descriptors, shape of image objects plays a key role. The descriptors have to be translation,scale and rotation invariant hence the selection of Hu Moments which meet this criteria. Eventually, the feature vector took the form:
+\[
+\textit{Geometric Feature Vector} = (\textit{HuMoments1}, \textit{HuMoments2}, \textit{HuMoments3}, \textit{HuMoments4}, \textit{HuMoments5}, \textit{HuMoments6},\textit{area}, \textit{Perimeter}, \textit{Solidity}, \textit{Rectangularity}, \textit{Compactness})
+\]
+
+\subsection{Random Forest on handcrafted features}
+All these feature vectors were concatenated to create one feature vector. We then trained a Random Forest classifier with this feature vector with the 6 classes. The optimal parameters were found by cross-validation.
+
+The model's performance was evaluated using F1 score given the class imbalance as shown.
+\begin{table}[htbp]
+\centering
+\caption{Class ditribution}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Column 1} & \textbf{Column 2} & \textbf{Column 3} \\
+\hline
+Row 1, Cell 1 & Row 1, Cell 2 & Row 1, Cell 3 \\
+Row 2, Cell 1 & Row 2, Cell 2 & Row 2, Cell 3 \\
+\hline
+\end{tabular}
+\end{table}
+
+To establish which features were important in discriminating the classes, we compute the permutation importance of the features to the trained classifier.
+
+\section{Deep feature extraction}
+\subsection{Convolutional Neural Networks}
+ Our framework employs a simple convolutional neural network consisting of three convolutional layers, ReLU activations, and max-pooling layers, followed by a linear layer for making predictions. Cross-entropy is used as the loss function since we are dealing with a multiclass classification problem.Since CNNs require inputs of equal size and given the varying sizes of objects in our dataset, we decided to crop and pad the segments. This choice was a trade-off between resizing, which could cause loss of textural information, and cropping and padding, which might lose some shape or geometrical information. Given that CNNs rely heavily on texture to extract features, cropping and padding were deemed the optimal approach. We cropped and padded the segments to extract patches of size 480 by 480. This size corresponds to the 95th percentile of both the height and width of all the region bounding boxes. Furthermore, the patches are centered on the region's center of mass.
+
+For each region, a majority label is assigned based on the associated ground truth labels. This labeling process is applied consistently across the training, validation, and testing sets.
+ 
+\subsection{Graph Neural Networks}
+\subsubsection{Graph construction}
+Each region generated using SLIC \cite{achanta_slic_2012} is represented as a graph, where the nodes correspond to pixels, and each pixel is connected to its 8 nearest neighbors. The task at hand is graph classification, where we aim to classify an entire graph.
+
+To construct a graph, we require node features, an adjacency matrix (or edge index), and a graph label. Our node features consist of the spectral values in four bands and the relative position of each pixel with respect to the region's center. The edges are defined based on the 8 nearest neighbors of each pixel.
+
+Formally, our graph G = (V,E) is undirected, with nodes V and edges E.The hidden information for each node is given by:
+hi=(Ri,Gi,Bi,IRi,Xi,Yi)
+
+
+\subsubsection{Graph Convolution}
+The graph structure is shown in fig. The 
+
+
+
+

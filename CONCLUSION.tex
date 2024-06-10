@@ -1,0 +1,21 @@
+\chapter{Conclusion}
+\section{Discussion and Justification of Results}
+The outcomes of the various methods experimented on highlight the importance of a comprehensive feature extraction process that encompasses textural, geometrical, as well as spectral features. These findings underscore the need to integrate multiple feature types to enhance the accuracy and robustness of the models.
+
+
+In addition to these methods, other techniques yet to be fully explored, such as graph in graph \cite{jia_graph--graph_2024}convolutional networks (GiGCNs) and advanced multi-scale analysis, further emphasize the strength of object-based image analysis (OBIA) through Multi-scale analysis. This allows for the examination of features at various levels of detail further enhancing the performance of the models. Furthermore, we highlight how objects play a significant role in allowing us to integrate geometric features as well.Various experiments are required to ensure homogeneity of objects before any feature extraction. Ensuring object homogeneity is critical for reliable feature extraction, as inconsistent objects can lead to inaccurate feature representation and degraded model performance. This decision can significantly influence the choice of segmentation algorithm.
+
+
+By incorporating textural features, we capture the surface variations and patterns within the data, which are crucial for distinguishing subtle differences. Geometrical features provide information on shapes, sizes, and spatial relationships, offering valuable insights into the structural aspects of the data. Spectral features, on the other hand, enable the analysis of the data's color and intensity variations across different wavelengths, which is essential for identifying specific material properties or conditions.
+
+\section{Segmentation Algorithm Choice}
+
+Choosing the appropriate segmentation algorithm is crucial, as it determines the quality and consistency of the image objects. It is essential to compare how objects generated with various segmentation methods perform when used with graph convolutional networks (GCNs). Such comparisons can help determine the most effective segmentation approach for capturing the relationships between image objects, which GCNs can model effectively.
+
+\section{Graph based Networks }
+
+Graph-based Networks offer a powerful means of modeling the relationships between image objects by capturing complex dependencies and improving feature representation. Besides what we have been able to test and experiment on, there is a plethora of models that need to be explored. Furthermore, having a comprehensive graph structure, such as incorporating spectral and positional features, prompts the question: what additional node features can we add to the graph so to generate a highly discriminative feature vector? This area warrants further exploration.
+
+\section{Conclusion}
+
+Incorporating advanced methods into the feature extraction process can further enhance the overall performance of image analysis models, making them more robust and accurate for various applications. Future work should focus on refining object-based techniques and exploring these advanced methods to fully leverage their potential in improving model effectiveness.
